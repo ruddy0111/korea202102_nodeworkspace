@@ -1,0 +1,128 @@
+<%
+/*
+페이징 처리를 위한 변수 선언 및 연산
+변수화 시켜놓으면 유지 보수하기가 용이하다.
+변수간의 순서는 매우 중요하다.
+*/
+
+var totalRecord = param.record.length; //총 레코드 수
+var pageSize=10;
+var totalPage=Math.ceil(totalRecord/pageSize);
+var blockSize=10;
+var currentPage;//현재 페이지
+//currentPage값은, 서버가 넘겨준 파라미터로 대체해야한다.
+
+currentPage=param.page;
+
+
+//setPage = Math.floor((currentPage-1)/blockSize)*blockSize;
+//
+//var firstPage = setPage+1;
+//var lastPage = setPage+blockSize;
+
+var curPos=(currentPage-1)*pageSize; //페이지단 데이터 배열의 시작 인덱스
+
+var firstPage = currentPage-(currentPage-1)%blockSize;
+var lastPage=firstPage +(blockSize-1);
+var num=totalRecord-curPos;
+
+
+
+%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">    
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+th, td {
+  text-align: left;
+  padding: 16px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+a{
+    text-decoration: none;
+}
+
+.pageNum{
+    font-size: 20px;
+    font-weight: bold;
+    color: blue;
+}
+</style>
+</head>
+<body>
+
+<h2>뉴스기사</h2>
+
+<p><%="총 레코드 수 : " + totalRecord%></p>
+<p><%="페이지 사이즈 : " + pageSize%></p>
+<p><%="총 페이지 수 : " + totalPage%></p>
+<p><%="출력당 페이지 수 : " + blockSize%></p>
+<p><%="현재 페이지 : " + currentPage%></p>
+
+<table>
+  <tr>
+    <th>No</th>
+    <th>뉴스 제목</th>
+    <th>기자</th>
+    <th>등록일</th>
+    <th>조회수</th>
+  </tr>
+  <%for(var i=1;i<=pageSize;i++){%>
+  <%if(num<1)break;%>
+    <%var news=param.record[curPos++]//배열에서 게시물 꺼내기%>
+    <%=news[4].length%>
+  <tr>
+    <td><%=(num--)%></td>
+    <td>
+        <a href="/news/detail"><%=news[1]%></a>
+    </td>
+    <td><%=news[2]%></td>
+    <%var d=new Date(news[4]);//날짜처리%>
+
+    <td>
+        <%=d.getFullYear()%>-<%=param.lib.getZeroString(d.getMonth()+1)%>-<%=param.lib.getZeroString(d.getDate())%>
+    </td>
+    <td><%=news[5]%></td>
+  </tr>
+  <%}%>
+  <tr>
+      <td colspan="5" style="text-align: center;">
+        <%if(firstPage-1 <1){%>
+       <a href="javascript:alert('이전 페이지가 없습니다');">◀</a>
+       <%}else{%>
+        <a href="/comments/list?currentPage=<%=firstPage-1%>">◀</a>
+        <%}%>
+        <%for(var i=firstPage;i<=lastPage;i++){%>
+          <%if(i>totalPage)break;%>
+            <a href="/comments/list?currentPage=<%=i%>"<%if(i==currentPage){%> class="pageNum"<%}%>>[<%=i%>]</a>
+       <%}%>
+
+       <%if(lastPage+1 > totalPage){%>
+       <a href="/comments/list?currentPage=<%=lastPage+1%>" >▶</a>
+       <%}else{%>
+       <a href="javascript:alert('다음 페이지가 없습니다');" >▶</a>
+       <%}%>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="5">
+      <button onclick="location.href='/html/regist_form.html'">글 등록</button>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

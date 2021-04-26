@@ -1,0 +1,18 @@
+<?xml version="1.0" encording="UTF-8"?>
+<!-- xml은 html과 같은 부모에서 태어난 태그를 사용할 수 있는 전자문서.
+html과는 달리 대소문자를 구분하는 까다로운 문법 사용.
+xml : 텍스트 기반의 데이터 베이스 -->
+<members>
+    <member>
+        <name>배트맨</name>
+        <age>38</age>   
+    </member>  
+    <member>
+        <name>수퍼맨</name>
+        <age>37</age>   
+    </member>  
+    <member>
+        <name>앤트맨</name>
+        <age>37</age>   
+    </member>  
+</members>

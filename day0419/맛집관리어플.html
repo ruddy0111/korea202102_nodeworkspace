@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+<style>
+    #wrapper{
+        width : 1000px;
+        height: 700px;
+        background: gray;
+        margin: auto;
+        overflow: hidden;
+    }
+    #side{
+        width: 200px;
+        height: 100%;
+        background: lightgoldenrodyellow;
+        float: left;
+    }
+    #content{
+        width: 800px;
+        height: 100%;
+        background: lightsalmon;
+        float: left;
+    }
+    #side *{
+        width: 95%;
+    }
+    #side input[type="text"]{
+        height: 20px;
+    }
+    #side textarea{
+        height: 100px;
+    }
+</style>
+
+
+
+
+
+<script>
+    var content;
+    var center;
+    var lati,lngi;
+    var googleMap;
+    var imgSelect;
+    
+
+    var storeList={
+        "stores" : [
+        {
+            "name" : "음식점1",
+            "image" : "../images/store/1.jpg"
+        },
+        {
+            "name" : "음식점2",
+            "image" : "../images/store/2.jpg"
+        },
+        {
+            "name" : "음식점3",
+            "image" : "../images/store/3.jpg"
+        },
+        {
+            "name" : "음식점4",
+            "image" : "../images/store/4.jpg"
+        },
+        {
+            "name" : "음식점5",
+            "image" : "../images/store/5.jpg"
+        }
+        ]
+    };
+
+    function init(){
+        content = document.getElementById("content");
+        lati = document.getElementById("lati");
+        lngi = document.getElementById("lngi");
+        imgSelect = document.getElementById("imgSelect");
+        pic = document.getElementById("pick");
+
+        //맵의  중심점에 대한 좌표 및 카메라 줌의 확대비율 설정
+        myCenter = new google.maps.LatLng(37.57596303363207, 126.9769442753378);
+        var mapProp = {
+            "center":myCenter,
+            "zoom":18
+        };
+        //설정 정보를 구글맵 객체에 적용
+        googleMap = new google.maps.Map(content, mapProp);
+
+        //지도 나온 후 마커 만들기
+        var marker = new google.maps.Marker({position: myCenter});
+
+        //생성된 마커를 적용할 맵 지정
+        marker.setMap(googleMap);
+        createImg()
+    }
+
+
+    //선택할 이미지 옵션 목록 생성
+    function createImg(){
+        //인덱스의 크기을 가져오는건 in
+        //인덱스의 값을 가져올때는 of
+        //속도가 느림
+        for(var store of storeList.stores){
+            // console.log(index);
+            var op = document.createElement("option");
+            op.text=store.name;
+            op.value=store.image;
+    
+            //생성된 옵션을 select 박스에 붙이기
+            imgSelect.add(op);
+        }
+    }
+
+    function preview(){
+        document.getElementById("pic").src = imgSelect.value;
+    }
+
+    function apply(){
+        myCenter = new google.maps.LatLng(lati.value,lngi.value);
+        var marker = new google.maps.Marker({position: myCenter});
+        marker.setMap(googleMap);
+
+        //카메라의 중심점을 현재 찍힌 마커로 이동
+        googleMap.setCenter(marker.getPosition());
+
+
+        google.maps.event.addListener(marker,'click',function() {
+            var tag = "<h3>"+document.getElementById("store_name").value+"</h3>";
+            tag+="<img src = \""+imgSelect.value+"\" width = \"60px\"><p>";
+            tag+=document.getElementById("detail").value;
+            var infowindow = new google.maps.InfoWindow({
+                content: tag
+            });
+            infowindow.open(googleMap,marker);
+        });
+        
+
+    }
+
+
+    function registByJson(){
+        //체크박스가 체크된 상태라면, json입력 textarea를 보여주고, 아니면 숨겨둔다
+        var vision=(document.getElementById("ch").checked)? "block":"none" ;
+        //block인지 none인지
+        document.getElementById("dump").style.display=vision;
+    }
+
+
+    function applyAll(){
+        // alert("Json?");
+        //textarea에 작성된 문자열 내의 json표기를 실제 json 객체화 시켜보자
+        //그러기 위해서는 문자열을 제거하고, json으로 해석을 해야한다
+        var json=JSON.parse(document.getElementById("dump").value);
+        var markerArray=[]; //여러개의 마커를 반복문 돌때, 보관할 용도
+        for(var i=0;i<json.storeList.length;i++){
+            var jumpo=json.storeList[i];
+
+            var myCenter = new google.maps.LatLng(jumpo.latLng.lat,jumpo.latLng.lng);
+            var marker = new google.maps.Marker({
+                position: myCenter,
+                index:i
+            });
+            marker.setMap(googleMap);
+            markerArray.push(marker);
+            googleMap.setCenter(marker.getPosition());
+
+            google.maps.event.addListener(marker,'click', function() {
+            //인포메이션 윈도우 띄우기 
+            //여기서의 this는 이 이벤트를 일으킨 주체
+            //console.log("당신이 클릭한 마커의 index는 ", this.index);
+
+            var tag="<h3>"+ json.storeList[this.index].name +"</h3>";
+            tag+="<img src=\""+json.storeList[this.index].image+"\" width=\"60px\"><p>";
+            tag+=json.storeList[this.index].review;
+
+            var infowindow = new google.maps.InfoWindow({
+                content:tag
+            });
+            infowindow.open(googleMap,markerArray[this.index]);    
+        });    
+         
+    }
+
+        
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    <div id="wrapper">
+        <div id="side">
+            <input type="text" placeholder="상호입력" id="store_name">
+            <textarea id="detail"></textarea>
+
+
+
+            <!-- 선택한 값이 바뀌었을때 감지, 다른옵션을 선택했을때 감지 -->
+            <select id="imgSelect" onchange="preview()">
+                <option value="">이미지 선택</option>
+            </select>
+            <img src="../images/rai/2.jpg" width="195px" id="pic">
+
+
+
+            일괄등록 : <input type="checkbox" onclick="registByJson()" id="ch">
+            <textarea placeholder="json 데이터 입력" id="dump" style="display:none"></textarea>
+
+
+
+            <input type="text" value="37.57513917930178" id="lati">
+            <input type="text" value="126.97506649787795" id="lngi">
+            <button onClick="(document.getElementById('ch').checked)? applyAll():apply()">적용</button>
+        </div>
+        <div id="content"></div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQCLqcFHARBxERK_eSpNQ7Nu6J0pRy-9E&callback=init"></script>
+</body>
+</html>

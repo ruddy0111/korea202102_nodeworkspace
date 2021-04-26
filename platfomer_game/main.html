@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document</title>
+<style>
+body{margin:0px}
+#wrapper{
+    width: 1280px;
+    height: 960px;
+    background-image: url(./freeimage/BG.png);
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+}
+</style>
+<script src="./js/GameObject.js"></script>
+<script src="./js/Block.js"></script>
+<script src="./js/Hero.js"></script>
+<script src="./js/lib.js"></script>
+<script>
+var hero;
+var blockArray=[];//벽돌을 담아놓을 배열
+
+function init(){
+    createBlock();
+    createHero();
+    
+    //키보드 이벤트 구현
+    window.addEventListener("keydown", function(e){//event객체가 익명함수의 매개 변수로 전달
+        
+        switch(e.keyCode){
+            case 32:jump();break;
+            case 37:hero.velX=-3;break;
+            case 39:hero.velX=3;break;
+
+        }
+    });
+    window.addEventListener("keyup", function(e){//event객체가 익명함수의 매개 변수로 전달
+        
+        switch(e.keyCode){
+            case 37:hero.velX=0;break;
+            case 39:hero.velX=0;break;
+
+        }
+    });
+}
+function createBlock(){//container, src, width, height, x, y
+    for(var i=0; i<10; i++){
+        var block=new Block(document.getElementById("wrapper"), "./freeimage/Objects/StoneBlock.png", 70,70,50+(70*i),600,0,0);
+        blockArray.push(block);//배열에 벽돌 추가
+    }
+}
+//주인공 생성
+function createHero(){
+    hero=new Hero(document.getElementById("wrapper"), "./freeimage/ninja.png", 55,85,100,50,0,1)
+}
+//점프처리
+function jump(){
+    //점프를 하지 않고 있는 상황이라면
+    if(hero.jump==false&&hero.velY==0){
+        hero.velY=-10;//순간적으로 음수전환(그러나 곧 g 때문에 양수로 전환된다.)
+        hero.jump=true;//주인공이 블럭 위에 묶여있지 않도록 처리
+    }
+}
+function gameLoop(){
+    hero.tick();
+    hero.render();
+}
+window.addEventListener("load", function(){
+    init();
+    setInterval("gameLoop()", 10);//FPS
+})
+
+</script>
+</head>
+<body>
+<div id="wrapper">
+</div>
+</body>
+</html>
